@@ -1,4 +1,6 @@
 using Legiosoft_test_case.Data;
+using Legiosoft_test_case.Services;
+using Legiosoft_test_case.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.UseSqlite("TestDb.db");
+builder.Services.AddSingleton<ITimezoneService, TimezoneService>();
 
 var app = builder.Build();
 

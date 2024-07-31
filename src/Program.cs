@@ -11,6 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 builder.Services.UseSqlite("TestDb.db");
 builder.Services.AddSingleton<ITimezoneService, TimezoneService>();
 

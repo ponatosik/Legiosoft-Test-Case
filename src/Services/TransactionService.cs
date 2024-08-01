@@ -23,9 +23,9 @@ public class TransactionService : ITransactionService
 		const string sql =
 			"""
 			INSERT INTO Transactions 
-			(Id, Name, Email, Ammount, ClientLocation_Latitude, ClientLocation_Longitude, UtcTime)
+			(Id, Name, Email, Amount, ClientLocation_Latitude, ClientLocation_Longitude, UtcTime)
 			VALUES
-			(@Id, @Name, @Email, @Ammount, @ClientLocation_Latitude, @ClientLocation_Longitude, @UtcTime)
+			(@Id, @Name, @Email, @Amount, @ClientLocation_Latitude, @ClientLocation_Longitude, @UtcTime)
 			""";
 
 		var commandData = transactions.Select(transaction => FlattenedTransaction.From(transaction)).ToList();
@@ -37,7 +37,7 @@ public class TransactionService : ITransactionService
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
 			"""
-			SELECT t.Id, t.Name, t.Email, t.Ammount, t.ClientLocation_Latitude, t.ClientLocation_Longitude, t.UtcTime
+			SELECT t.Id, t.Name, t.Email, t.Amount, t.ClientLocation_Latitude, t.ClientLocation_Longitude, t.UtcTime
 			FROM Transactions t
 			""";
 
@@ -49,7 +49,7 @@ public class TransactionService : ITransactionService
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
 			"""
-			SELECT t.id, t.Name, t.Email, t.Ammount, t.ClientLocation_Latitute, t.ClientLocation_Longitude, t.UtcTime
+			SELECT t.id, t.Name, t.Email, t.Amount, t.ClientLocation_Latitute, t.ClientLocation_Longitude, t.UtcTime
 			FROM Transactions t
 			WHER t.UtcTime BETWEEN @FromDate AND @ToDate
 			""";
@@ -63,9 +63,9 @@ public class TransactionService : ITransactionService
 		const string sql =
 			"""
 			REPLACE INTO Transactions 
-			(Id, Name, Email, Ammount, ClientLocation_Latitude, ClientLocation_Longitude, UtcTime)
+			(Id, Name, Email, Amount, ClientLocation_Latitude, ClientLocation_Longitude, UtcTime)
 			VALUES
-			(@Id, @Name, @Email, @Ammount, @ClientLocation_Latitude, @ClientLocation_Longitude, @UtcTime)
+			(@Id, @Name, @Email, @Amount, @ClientLocation_Latitude, @ClientLocation_Longitude, @UtcTime)
 			""";
 
 		var commandData = transactions.Select(transaction => FlattenedTransaction.From(transaction)).ToList();
@@ -80,7 +80,7 @@ public class TransactionService : ITransactionService
 			UPDATE Transactions t
 			SET Name = @Name,
 			SET Email = @Email,
-			SET Ammount = @Ammount,
+			SET Amount = @Amount,
 			SET ClientLocation_Latitude = @ClientLocation_Latitude,
 			SET CLientLocation_Longitude = @CLientLocation_Longitude,
 			SET UtcTime = @UtcTime

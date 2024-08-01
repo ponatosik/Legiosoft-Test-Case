@@ -7,7 +7,7 @@ public record FlattenedTransaction
 	public string Id { get; set; }
 	public string Name { get; set; }
 	public string Email { get; set; }
-	public decimal Ammount { get; set; }
+	public decimal Amount { get; set; }
 	public decimal ClientLocation_Latitude { get; set; }
 	public decimal ClientLocation_Longitude { get; set; }
 	public DateTime UtcTime { get; set; }
@@ -18,7 +18,7 @@ public record FlattenedTransaction
 			Id = transaction.Id,
 			Name = transaction.Name,
 			Email = transaction.Email,
-			Ammount = transaction.Ammount,
+			Amount = transaction.Amount,
 			ClientLocation_Latitude = transaction.ClientLocation.Latitude,
 			ClientLocation_Longitude = transaction.ClientLocation.Longitude,
 			UtcTime = transaction.UtcTime
@@ -31,7 +31,7 @@ public record FlattenedTransaction
 			Id = this.Id,
 			Name = this.Name,
 			Email = this.Email,
-			Ammount = this.Ammount,
+			Amount = this.Amount,
 			ClientLocation = new Coordinates()
 			{
 				Latitude = this.ClientLocation_Latitude,

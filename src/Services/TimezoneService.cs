@@ -1,6 +1,7 @@
 ﻿using GeoTimeZone;
 using Legiosoft_test_case.Models;
 using Legiosoft_test_case.Services.Interfaces;
+using TimeZoneConverter;
 
 namespace Legiosoft_test_case.Services;
 
@@ -16,12 +17,12 @@ public class TimezoneService : ITimezoneService
 	public TimeZoneInfo GetTimeZone(Coordinates coordinates)
 	{
 		string ianaTimeZone = GetIanaTimezone(coordinates);
-		return TimeZoneInfo.FindSystemTimeZoneById(ianaTimeZone);
+		return TZConvert.GetTimeZoneInfo(ianaTimeZone);
 	}
 
 	public TimeSpan? GetTimeZoneOffset(string timeZoneId)
 	{
-		if (TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out TimeZoneInfo timeZone))
+		if (TZConvert.TryGetTimeZoneInfo(timeZoneId, out TimeZoneInfo timeZone))
 		{
 			return timeZone.BaseUtcOffset;
 		}
@@ -42,7 +43,7 @@ public class TimezoneService : ITimezoneService
 
 	public DateTime? GetUtcTime(string timeZoneId, DateTime localTime)
 	{
-		if (TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out TimeZoneInfo timeZone))
+		if (TZConvert.TryGetTimeZoneInfo(timeZoneId, out TimeZoneInfo timeZone))
 		{
 			TimeSpan timeZoneOffset = timeZone.BaseUtcOffset;
 			return GetUtcTime(localTime, timeZoneOffset);

@@ -1,4 +1,5 @@
 using Legiosoft_test_case.Data;
+using Legiosoft_test_case.Models;
 using Legiosoft_test_case.Services;
 using Legiosoft_test_case.Services.Interfaces;
 
@@ -14,6 +15,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.UseSqlite("TestDb.db");
 builder.Services.AddSingleton<ITimezoneService, TimezoneService>();
 builder.Services.AddSingleton<ITransactionService, TransactionService>();
+builder.Services.AddSingleton<ICsvReader<Transaction>, TransactionCsvReaderService>();
 
 var app = builder.Build();
 

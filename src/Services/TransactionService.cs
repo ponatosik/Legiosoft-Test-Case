@@ -49,9 +49,9 @@ public class TransactionService : ITransactionService
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
 			"""
-			SELECT t.id, t.Name, t.Email, t.Amount, t.ClientLocation_Latitute, t.ClientLocation_Longitude, t.UtcTime
+			SELECT t.Id, t.Name, t.Email, t.Amount, t.ClientLocation_Latitude, t.ClientLocation_Longitude, t.UtcTime
 			FROM Transactions t
-			WHER t.UtcTime BETWEEN @FromDate AND @ToDate
+			WHERE t.UtcTime BETWEEN @FromDate AND @ToDate
 			""";
 
 		return connection.QueryAsync<Transaction>(sql, new { FromDate = from, ToDate = to });
@@ -77,14 +77,10 @@ public class TransactionService : ITransactionService
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
 			"""
-			UPDATE Transactions t
-			SET Name = @Name,
-			SET Email = @Email,
-			SET Amount = @Amount,
-			SET ClientLocation_Latitude = @ClientLocation_Latitude,
-			SET CLientLocation_Longitude = @CLientLocation_Longitude,
-			SET UtcTime = @UtcTime
-			WHERE t.Id == @Id
+			UPDATE Transactions
+			SET (Name, Email, Amount, ClientLocation_Latitude, ClientLocation_Longitude, UtcTime) =
+			(@Name, @Email, @Amount, @ClientLocation_Latitude, @ClientLocation_Longitude, @UtcTime)
+			WHERE Id = @Id
 			""";
 
 		var commandData = transactions.Select(transaction => FlattenedTransaction.From(transaction)).ToList();

@@ -2,17 +2,16 @@
 using Legiosoft_test_case.Models;
 using Legiosoft_test_case.Services.Interfaces;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace Legiosoft_test_case.Services;
 
 public class TransactionCsvReaderService : ICsvReader<Transaction>
 {
-	private readonly ITimezoneService _timezoneService;
+	private readonly ITransactionFactory _transactionFactory;
 
-	public TransactionCsvReaderService(ITimezoneService timezoneService)
+	public TransactionCsvReaderService(ITransactionFactory transactionFactory)
 	{
-		_timezoneService = timezoneService;
+		_transactionFactory = transactionFactory;
 	}
 
 	public IEnumerable<Transaction> Read(Stream stream)
@@ -45,16 +44,7 @@ public class TransactionCsvReaderService : ICsvReader<Transaction>
 
 		decimal amount = decimal.Parse(amountStr.Replace("$",""), CultureInfo.InvariantCulture);
 		Coordinates clientLocation = Coordinates.Parse(clientLocationStr);
-		DateTime utcTime = _timezoneService.GetUtcTime(clientLocation, localTime);
 
-		return new Transaction
-		{
-			Id = id,
-			Name = name,
-			Email = email,
-			Amount = amount,
-			ClientLocation = clientLocation,
-			UtcTime = utcTime
-		};
+		return _transactionFactory.CreateFromLocalTime(id, name, email, amount, clientLocation, localTime);
 	}
 }

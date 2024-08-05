@@ -17,6 +17,7 @@ builder.Services.AddSingleton<ITimezoneService, TimezoneService>();
 builder.Services.AddSingleton<ITransactionService, TransactionService>();
 builder.Services.AddSingleton<ICsvReader<Transaction>, TransactionCsvReaderService>();
 builder.Services.AddSingleton<IExcelWriter<Transaction>, TransactionExcelWriter>();
+builder.Services.AddSingleton<ITransactionFactory, TransactionFactory>();
 
 var app = builder.Build();
 

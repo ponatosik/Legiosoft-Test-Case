@@ -13,6 +13,9 @@ public class TransactionsServiceTest
 	ITransactionService _transactionsService;
 	DatabaseContext _dbContext;
 
+	static Coordinates GREENWICH_COORDINATES => new Coordinates(51.47M, -0.000001M);
+	static string GREENWICH_TIMEZONE_ID => "Etc/GMT";
+
 	Transaction[] _persistedTransactions =
 	[
 		new Transaction()
@@ -21,8 +24,10 @@ public class TransactionsServiceTest
 			Name = "user1",
 			Email = "email111@mail.com",
 			Amount = 10,
-			ClientLocation = new() { Latitude = 10, Longitude = 10 },
-			UtcTime = DateTime.Parse("01/01/2024")
+			ClientLocation = GREENWICH_COORDINATES,
+			IanaTimeZoneId = GREENWICH_TIMEZONE_ID,
+			UtcTime = DateTime.Parse("01/01/2024"),
+			LocalTime = DateTime.Parse("01/01/2024")
 		},
 		new Transaction()
 		{
@@ -30,17 +35,21 @@ public class TransactionsServiceTest
 			Name = "user2",
 			Email = "email222@mail.com",
 			Amount = 20,
-			ClientLocation = new() { Latitude = 20, Longitude = 20 },
-			UtcTime = DateTime.Parse("02/02/2024")
+			ClientLocation = GREENWICH_COORDINATES,
+			IanaTimeZoneId = GREENWICH_TIMEZONE_ID,
+			UtcTime = DateTime.Parse("02/02/2024"),
+			LocalTime = DateTime.Parse("02/02/2024")
 		},
 		new Transaction() {
 			Id = "id3",
 			Name = "user3",
 			Email = "email333@mail.com",
 			Amount = 33,
-			ClientLocation = new() { Latitude = 30, Longitude = 30 },
-			UtcTime = DateTime.Parse("03/03/2024")
-		},
+			ClientLocation = GREENWICH_COORDINATES,
+			IanaTimeZoneId = GREENWICH_TIMEZONE_ID,
+			UtcTime = DateTime.Parse("03/03/2024"),
+			LocalTime = DateTime.Parse("03/03/2024")
+		}
 	];
 
 	public TransactionsServiceTest()
@@ -71,8 +80,10 @@ public class TransactionsServiceTest
 	{
 		Transaction[] transactions =
 		[
-			new Transaction() { Id = "new_id1", Name = "n1", Email = "e1", Amount = 1, ClientLocation = new(), UtcTime = DateTime.UtcNow},
-			new Transaction() { Id = "new_id2", Name = "n2", Email = "e2", Amount = 2, ClientLocation = new(), UtcTime = DateTime.UtcNow.AddDays(2)}
+			new Transaction() { Id = "new_id1", Name = "n1", Email = "e1", Amount = 1, ClientLocation = GREENWICH_COORDINATES,
+				IanaTimeZoneId = GREENWICH_TIMEZONE_ID, UtcTime = DateTime.UtcNow, LocalTime = DateTime.UtcNow },
+			new Transaction() { Id = "new_id2", Name = "n2", Email = "e2", Amount = 2, ClientLocation = GREENWICH_COORDINATES,
+				IanaTimeZoneId = GREENWICH_TIMEZONE_ID, UtcTime = DateTime.UtcNow.AddDays(2), LocalTime =DateTime.UtcNow.AddDays(2) }
 		];
 
 		await _transactionsService.Add(transactions);
@@ -105,8 +116,10 @@ public class TransactionsServiceTest
 			Name = "new user",
 			Email = "NewEmail@mail.com",
 			Amount = 999,
-			ClientLocation = new() { Latitude = 45, Longitude = 45 },
-			UtcTime = DateTime.Parse("04/04/2024")
+			ClientLocation = GREENWICH_COORDINATES,
+			IanaTimeZoneId = GREENWICH_TIMEZONE_ID,
+			UtcTime = DateTime.Parse("04/04/2024"),
+			LocalTime = DateTime.Parse("04/04/2024")
 		};
 		var existingTransaction = _persistedTransactions[0];
 		Transaction[] transactions = [existingTransaction, newTransaction];

@@ -10,7 +10,9 @@ public record FlattenedTransaction
 	public decimal Amount { get; set; }
 	public decimal ClientLocation_Latitude { get; set; }
 	public decimal ClientLocation_Longitude { get; set; }
+	public string IanaTimeZoneId { get; set; }
 	public DateTime UtcTime { get; set; }
+	public DateTime LocalTime { get; set; }
 
 	public static FlattenedTransaction From(Transaction transaction) =>
 		new FlattenedTransaction
@@ -21,7 +23,9 @@ public record FlattenedTransaction
 			Amount = transaction.Amount,
 			ClientLocation_Latitude = transaction.ClientLocation.Latitude,
 			ClientLocation_Longitude = transaction.ClientLocation.Longitude,
-			UtcTime = transaction.UtcTime
+			IanaTimeZoneId = transaction.IanaTimeZoneId,
+			UtcTime = transaction.UtcTime,
+			LocalTime = transaction.LocalTime
 		};
 
 	public Transaction ToTransaction()
@@ -37,7 +41,9 @@ public record FlattenedTransaction
 				Latitude = this.ClientLocation_Latitude,
 				Longitude = this.ClientLocation_Longitude
 			},
-			UtcTime = this.UtcTime
+			IanaTimeZoneId = this.IanaTimeZoneId,
+			UtcTime = this.UtcTime,
+			LocalTime = this.LocalTime
 		};
 	}
 }

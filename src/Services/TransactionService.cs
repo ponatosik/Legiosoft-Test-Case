@@ -11,7 +11,6 @@ public class TransactionService : ITransactionService
 {
 	private readonly IDbConnectionFactory _connectionFactory;
 
-
 	public TransactionService(IDbConnectionFactory connectionFactory)
 	{
 		_connectionFactory = connectionFactory;
@@ -23,9 +22,11 @@ public class TransactionService : ITransactionService
 		const string sql =
 			"""
 			INSERT INTO Transactions 
-			(Id, Name, Email, Amount, ClientLocation_Latitude, ClientLocation_Longitude, UtcTime)
+				(Id, Name, Email, Amount, ClientLocation_Latitude, ClientLocation_Longitude, 
+				IanaTimeZoneId, UtcTime, LocalTime)
 			VALUES
-			(@Id, @Name, @Email, @Amount, @ClientLocation_Latitude, @ClientLocation_Longitude, @UtcTime)
+				(@Id, @Name, @Email, @Amount, @ClientLocation_Latitude, @ClientLocation_Longitude,
+				@IanaTimeZoneId, @UtcTime, @LocalTime)
 			""";
 
 		var commandData = transactions.Select(transaction => FlattenedTransaction.From(transaction)).ToList();
@@ -37,7 +38,9 @@ public class TransactionService : ITransactionService
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
 			"""
-			SELECT t.Id, t.Name, t.Email, t.Amount, t.ClientLocation_Latitude, t.ClientLocation_Longitude, t.UtcTime
+			SELECT 
+				t.Id, t.Name, t.Email, t.Amount, t.ClientLocation_Latitude, t.ClientLocation_Longitude,
+				t.IanaTimeZoneId, t.UtcTime, t.LocalTime
 			FROM Transactions t
 			""";
 
@@ -49,7 +52,9 @@ public class TransactionService : ITransactionService
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
 			"""
-			SELECT t.Id, t.Name, t.Email, t.Amount, t.ClientLocation_Latitude, t.ClientLocation_Longitude, t.UtcTime
+			SELECT 
+				t.Id, t.Name, t.Email, t.Amount, t.ClientLocation_Latitude, t.ClientLocation_Longitude,
+				t.IanaTimeZoneId, t.UtcTime, t.LocalTime
 			FROM Transactions t
 			WHERE t.UtcTime BETWEEN @FromDate AND @ToDate
 			""";
@@ -63,9 +68,11 @@ public class TransactionService : ITransactionService
 		const string sql =
 			"""
 			REPLACE INTO Transactions 
-			(Id, Name, Email, Amount, ClientLocation_Latitude, ClientLocation_Longitude, UtcTime)
+				(Id, Name, Email, Amount, ClientLocation_Latitude, ClientLocation_Longitude, 
+				IanaTimeZoneId, UtcTime, LocalTime)
 			VALUES
-			(@Id, @Name, @Email, @Amount, @ClientLocation_Latitude, @ClientLocation_Longitude, @UtcTime)
+				(@Id, @Name, @Email, @Amount, @ClientLocation_Latitude, @ClientLocation_Longitude,
+				@IanaTimeZoneId, @UtcTime, @LocalTime)
 			""";
 
 		var commandData = transactions.Select(transaction => FlattenedTransaction.From(transaction)).ToList();
@@ -78,8 +85,12 @@ public class TransactionService : ITransactionService
 		const string sql =
 			"""
 			UPDATE Transactions
-			SET (Name, Email, Amount, ClientLocation_Latitude, ClientLocation_Longitude, UtcTime) =
-			(@Name, @Email, @Amount, @ClientLocation_Latitude, @ClientLocation_Longitude, @UtcTime)
+			SET
+				(Id, Name, Email, Amount, ClientLocation_Latitude, ClientLocation_Longitude, 
+				IanaTimeZoneId, UtcTime, LocalTime)
+				=
+				(@Id, @Name, @Email, @Amount, @ClientLocation_Latitude, @ClientLocation_Longitude,
+				@IanaTimeZoneId, @UtcTime, @LocalTime)
 			WHERE Id = @Id
 			""";
 

@@ -1,5 +1,4 @@
-﻿
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Legiosoft_test_case.Models;
 
@@ -7,6 +6,13 @@ public class Coordinates
 {
 	public decimal Latitude { get; set; }
 	public decimal Longitude { get; set; }
+
+	public Coordinates() { }
+	public Coordinates(decimal latitude, decimal longitude)
+	{
+		Latitude = latitude;
+		Longitude = longitude;
+	}
 
 	public static Coordinates Parse(string str)
 	{

@@ -7,5 +7,7 @@ public class Transaction
 	public string Email { get; set; }
 	public decimal Amount { get; set; }
 	public Coordinates ClientLocation { get; set; }
+	public string IanaTimeZoneId { get; set; }
 	public DateTime UtcTime { get; set; }
+	public DateTime LocalTime { get; set; }
 }

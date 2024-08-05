@@ -62,6 +62,21 @@ public class TransactionService : ITransactionService
 		return connection.QueryAsync<Transaction>(sql, new { FromDate = from, ToDate = to });
 	}
 
+	public Task<IEnumerable<Transaction>> GetInTransactionLocalDateRange(DateTime from, DateTime to)
+	{
+		using IDbConnection connection = _connectionFactory.CreateConnection();
+		const string sql =
+			"""
+			SELECT 
+				t.Id, t.Name, t.Email, t.Amount, t.ClientLocation_Latitude, t.ClientLocation_Longitude,
+				t.IanaTimeZoneId, t.UtcTime, t.LocalTime
+			FROM Transactions t
+			WHERE t.LocalTime BETWEEN @FromDate AND @ToDate
+			""";
+
+		return connection.QueryAsync<Transaction>(sql, new { FromDate = from, ToDate = to });
+	}
+
 	public Task Save(IEnumerable<Transaction> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();

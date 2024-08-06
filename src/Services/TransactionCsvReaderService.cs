@@ -19,32 +19,70 @@ public class TransactionCsvReaderService : ICsvReader<Transaction>
 		using StreamReader streamReader = new StreamReader(stream);
 		using CsvReader csv = new(streamReader, CultureInfo.InvariantCulture);
 
-		//Todo: verify headers name
+		VerifyHeader(csv);
 
-		csv.Read();
-		csv.ReadHeader();
-
+		int lineNumber = 1;
 		LinkedList<Transaction> transactions = new LinkedList<Transaction>();
 		while (csv.Read())
 		{
-			transactions.AddLast(ReadTransaction(csv));
+			Transaction transaction = ReadTransaction(csv, lineNumber++);
+			transactions.AddLast(transaction);
 		}
 
 		return transactions;
 	}
 
-	private Transaction ReadTransaction(CsvReader csv)
+	private void VerifyHeader(CsvReader csv)
 	{
-		string id = csv.GetField<string>("transaction_id")!;
-		string name = csv.GetField<string>("name")!;
-		string email = csv.GetField<string>("email")!;
-		string amountStr = csv.GetField<string>("amount")!;
-		DateTime localTime = csv.GetField<DateTime>("transaction_date");
-		string clientLocationStr = csv.GetField<string>("client_location")!;
+		csv.Read();
+		csv.ReadHeader();
 
-		decimal amount = decimal.Parse(amountStr.Replace("$",""), CultureInfo.InvariantCulture);
-		Coordinates clientLocation = Coordinates.Parse(clientLocationStr);
+		string[]? header = csv.HeaderRecord;
 
-		return _transactionFactory.CreateFromLocalTime(id, name, email, amount, clientLocation, localTime);
+		if(header is null)
+		{
+			throw new FormatException($"Failed to read cvs file. File must contain header.");
+		}
+
+		AssertHeaderContainsName(header, "transaction_id");
+		AssertHeaderContainsName(header, "name");
+		AssertHeaderContainsName(header, "email");
+		AssertHeaderContainsName(header, "amount");
+		AssertHeaderContainsName(header, "transaction_date");
+		AssertHeaderContainsName(header, "client_location");
+	}
+
+	private void AssertHeaderContainsName(string[] header, string headerName)
+	{
+		if (!header.Contains(headerName))
+		{
+			throw new FormatException($"Failed to read transaction from cvs file. File must contain {headerName} column.");
+		}
+	}
+
+	private Transaction ReadTransaction(CsvReader csv, int currentLine)
+	{
+		try
+		{
+			string id = csv.GetField<string>("transaction_id")!;
+			string name = csv.GetField<string>("name")!;
+			string email = csv.GetField<string>("email")!;
+
+			string amountStr = csv.GetField<string>("amount")!;
+			decimal amount = decimal.Parse(amountStr.Replace("$", ""), CultureInfo.InvariantCulture);
+
+			string localTimeStr = csv.GetField<string>("transaction_date")!;
+			DateTime localTime = DateTime.Parse(localTimeStr, CultureInfo.InvariantCulture);
+
+			string clientLocationStr = csv.GetField<string>("client_location")!;
+			Coordinates clientLocation = Coordinates.Parse(clientLocationStr);
+
+			return _transactionFactory.CreateFromLocalTime(id, name, email, amount, clientLocation, localTime);
+		}
+		catch (FormatException ex)
+		{
+			var currentIndex = csv.CurrentIndex + 1;
+			throw new FormatException($"Failed to read transaction from cvs file. Error at line {currentLine}, column {currentIndex}.", ex);
+		}
 	}
 }

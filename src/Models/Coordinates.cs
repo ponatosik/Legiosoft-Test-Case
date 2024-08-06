@@ -31,6 +31,15 @@ public class Coordinates
 			throw new FormatException("Invalid coordinates format. Input string must be in the format 'latitude, longitude'.");
 		}
 
+		if(latitude < -180 || latitude > 180)
+		{
+			throw new FormatException("Invalid coordinates format. latitude must be in range from -180 to 180.");
+		}
+		if (longitude < -180 || longitude > 180)
+		{
+			throw new FormatException("Invalid coordinates format. longitude must be in range from -180 to 180.");
+		}
+
 		return new Coordinates
 		{
 			Latitude = latitude,

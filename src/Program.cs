@@ -1,4 +1,5 @@
 using Legiosoft_test_case.Data;
+using Legiosoft_test_case.ExceptionHandlers;
 using Legiosoft_test_case.Models;
 using Legiosoft_test_case.Services;
 using Legiosoft_test_case.Services.Interfaces;
@@ -18,8 +19,14 @@ builder.Services.AddSingleton<ITransactionService, TransactionService>();
 builder.Services.AddSingleton<ICsvReader<Transaction>, TransactionCsvReaderService>();
 builder.Services.AddSingleton<IExcelWriter<Transaction>, TransactionExcelWriter>();
 builder.Services.AddSingleton<ITransactionFactory, TransactionFactory>();
+builder.Services.AddProblemDetails();
+
+builder.Services.AddExceptionHandler<FormatExceptionHandler>();
 
 var app = builder.Build();
+
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

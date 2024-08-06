@@ -18,7 +18,9 @@ public class TransactionFactory : ITransactionFactory
 		string email,
 		decimal amount,
 		Coordinates clientLocation,
-		DateTime utcTime)
+		string ianaTimeZoneId,
+		DateTime utcTime,
+		DateTime localTime)
 	{
 		return new Transaction()
 		{
@@ -27,13 +29,22 @@ public class TransactionFactory : ITransactionFactory
 			Email = email,
 			Amount = amount,
 			ClientLocation = clientLocation,
-			UtcTime = utcTime
+			IanaTimeZoneId = ianaTimeZoneId,
+			UtcTime = utcTime,
+			LocalTime = localTime
 		};
 	}
 
-	public Transaction CreateFromLocalTime(string id, string name, string email, decimal amount, Coordinates clientLocation, DateTime localTime)
+	public Transaction CreateFromLocalTime(
+		string id,
+		string name,
+		string email,
+		decimal amount,
+		Coordinates clientLocation,
+		DateTime localTime)
 	{
+		string timeZoneId = _timezoneService.GetIanaTimezone(clientLocation);
 		DateTime utcTime = _timezoneService.GetUtcTime(clientLocation, localTime);
-		return Create(id, name, email, amount, clientLocation, utcTime);
+		return Create(id, name, email, amount, clientLocation, timeZoneId, utcTime, localTime);
 	}
 }

@@ -10,7 +10,9 @@ public interface ITransactionFactory
 		string email,
 		decimal amount,
 		Coordinates clientLocation,
-		DateTime utcTime);
+		string ianaTimeZoneId,
+		DateTime utcTime,
+		DateTime localTime);
 
 	public Transaction CreateFromLocalTime(
 		string id,

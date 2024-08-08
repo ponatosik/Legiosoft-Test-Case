@@ -20,24 +20,24 @@ public class TimezoneService : ITimezoneService
 		return TZConvert.GetTimeZoneInfo(ianaTimeZone);
 	}
 
-	public TimeSpan? GetTimeZoneOffset(string timeZoneId)
+	public TimeSpan? GetTimeZoneOffset(string timeZoneId, DateTime localTime)
 	{
-		if (TZConvert.TryGetTimeZoneInfo(timeZoneId, out TimeZoneInfo timeZone))
+		if (TZConvert.TryGetTimeZoneInfo(timeZoneId, out TimeZoneInfo? timeZone))
 		{
-			return timeZone.BaseUtcOffset;
+			return timeZone.GetUtcOffset(localTime);
 		}
 		return null;
 	}
 
-	public TimeSpan GetTimeZoneOffset(Coordinates coordinates)
+	public TimeSpan GetTimeZoneOffset(Coordinates coordinates, DateTime localTime)
 	{
 		TimeZoneInfo timeZone = GetTimeZone(coordinates);
-		return timeZone.BaseUtcOffset;
+		return timeZone.GetUtcOffset(localTime);
 	}
 
 	public DateTime GetUtcTime(Coordinates coordinates, DateTime localTime)
 	{
-		TimeSpan timeZoneOffset = GetTimeZoneOffset(coordinates);
+		TimeSpan timeZoneOffset = GetTimeZoneOffset(coordinates, localTime);
 		return GetUtcTime(localTime, timeZoneOffset);
 	}
 
@@ -53,7 +53,6 @@ public class TimezoneService : ITimezoneService
 
 	public DateTime GetUtcTime(DateTime localTime, TimeSpan utcOffset)
 	{
-		DateTimeOffset localDateTimeOffset = new DateTimeOffset(localTime, utcOffset);
-		return localDateTimeOffset.UtcDateTime;
+		return localTime.Subtract(utcOffset);
 	}
 }

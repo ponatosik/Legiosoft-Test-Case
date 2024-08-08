@@ -267,7 +267,7 @@ public class TransactionsController : Controller
 		string? ianaTimeZoneId)
 	{
 		var timeZoneId = ianaTimeZoneId ?? "Etc/GMT";
-		TimeSpan timeZoneOffset = _timezoneService.GetTimeZoneOffset(timeZoneId) ?? TimeSpan.Zero;
+		TimeSpan timeZoneOffset = _timezoneService.GetTimeZoneOffset(timeZoneId, DateTime.UtcNow) ?? TimeSpan.Zero;
 		var from = fromDate?.Add(timeZoneOffset) ?? DateTime.MinValue;
 		var to = toDate?.Add(timeZoneOffset) ?? DateTime.MaxValue;
 		return await _transactionService.GetInDateRangeAsync(from, to);

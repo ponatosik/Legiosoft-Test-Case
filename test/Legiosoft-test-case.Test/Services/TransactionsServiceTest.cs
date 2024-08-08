@@ -86,7 +86,7 @@ public class TransactionsServiceTest
 			new Transaction() { Id = "new_id1", Name = "n1", Email = "e1", Amount = 1, ClientLocation = GREENWICH_COORDINATES,
 				IanaTimeZoneId = GREENWICH_TIMEZONE_ID, UtcTime = DateTime.UtcNow, LocalTime = DateTime.UtcNow },
 			new Transaction() { Id = "new_id2", Name = "n2", Email = "e2", Amount = 2, ClientLocation = GREENWICH_COORDINATES,
-				IanaTimeZoneId = GREENWICH_TIMEZONE_ID, UtcTime = DateTime.UtcNow.AddDays(2), LocalTime =DateTime.UtcNow.AddDays(2) }
+				IanaTimeZoneId = GREENWICH_TIMEZONE_ID, UtcTime = DateTime.UtcNow.AddDays(2), LocalTime = DateTime.UtcNow.AddDays(2) }
 		];
 		var transactionDtos = transactions.Select(TransactionDTO.From);
 

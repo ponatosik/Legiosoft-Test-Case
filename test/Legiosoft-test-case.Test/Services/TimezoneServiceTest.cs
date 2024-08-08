@@ -14,7 +14,7 @@ public class TimezoneServiceTest
 	[InlineData(34.05, -118.24, "America/Los_Angeles")]
 	[InlineData(51.50, -0.11, "Europe/London")]
 	[InlineData(34.65, 139.83, "Asia/Tokyo")]
-	public void GetIanaTiezone_ValidCoordinates_ShouldReturnTimeZoneIanaId(
+	public void GetIanaTimezone_ValidCoordinates_ShouldReturnTimeZoneIanaId(
 		 decimal latitude, decimal longitude, string expectedIanaId)
 	{
 		var coordinates = new Coordinates
@@ -36,6 +36,7 @@ public class TimezoneServiceTest
 	public void GetTimeZoneOffser_ValidCoordinates_ShouldReturnTimeZoneOffset(
 		 decimal latitude, decimal longitude, string expectedUtcOffset)
 	{
+		var localTime = DateTime.Parse("01/01/2018 12:00", CultureInfo.InvariantCulture);
 		var expectedOffset = TimeSpan.Parse(expectedUtcOffset);
 		var coordinates = new Coordinates
 		{
@@ -43,7 +44,7 @@ public class TimezoneServiceTest
 			Longitude = longitude
 		};
 
-		var actual = _timezoneService.GetTimeZoneOffset(coordinates);
+		var actual = _timezoneService.GetTimeZoneOffset(coordinates, localTime);
 
 		Assert.Equal(expectedOffset, actual);
 	}
@@ -82,6 +83,32 @@ public class TimezoneServiceTest
 		var timeOffset = TimeSpan.Parse(timeOffsetStr, CultureInfo.InvariantCulture);
 
 		var actual = _timezoneService.GetUtcTime(localTime, timeOffset);
+
+		Assert.Equal(expectedTime, actual);
+	}
+
+	[Theory]
+	// Europe/Kyiv 
+	[InlineData(50.45, 30.52, "01/01/2018 19:22", "01/01/2018 17:22")]
+	[InlineData(50.45, 30.52, "06/01/2018 19:22", "06/01/2018 16:22")]
+	// America/Los_Angeles
+	[InlineData(34.05, -118.24, "01/01/2018 19:22", "01/02/2018 03:22")]
+	[InlineData(34.05, -118.24, "06/01/2018 19:22", "06/02/2018 02:22")]
+	// Europe/London
+	[InlineData(51.50, -0.11, "01/01/2018 19:22", "01/01/2018 19:22")]
+	[InlineData(51.50, -0.11, "06/01/2018 19:22", "06/01/2018 18:22")]
+	public void GetUtcTime_TimeZoneWithDaylightSaving_ShouldReturnDiffrentUtc0Time(
+		 decimal latitude, decimal longitude, string localTimeStr, string expectedTimeStr)
+	{
+		var localTime = DateTime.Parse(localTimeStr, CultureInfo.InvariantCulture);
+		var expectedTime = DateTime.Parse(expectedTimeStr, CultureInfo.InvariantCulture);
+		var coordinates = new Coordinates
+		{
+			Latitude = latitude,
+			Longitude = longitude
+		};
+
+		var actual = _timezoneService.GetUtcTime(coordinates, localTime);
 
 		Assert.Equal(expectedTime, actual);
 	}

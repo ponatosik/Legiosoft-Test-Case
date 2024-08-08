@@ -52,16 +52,16 @@ public class TransactionsController : Controller
 	}
 
 	[HttpPost]
-	public async Task<IActionResult> Post([FromBody] IEnumerable<Transaction> transactions)
+	public async Task<IActionResult> Post([FromBody] IEnumerable<TransactionDTO> transactions)
 	{
-		await _transactionService.Add(transactions);
+		await _transactionService.AddAsync(transactions);
 		return Created();
 	}
 
 	[HttpPut]
-	public async Task<IActionResult> Put([FromBody] IEnumerable<Transaction> transactions)
+	public async Task<IActionResult> Put([FromBody] IEnumerable<TransactionDTO> transactions)
 	{
-		await _transactionService.Save(transactions);
+		await _transactionService.UpdateAsync(transactions);
 		return Ok();
 	}
 
@@ -70,7 +70,8 @@ public class TransactionsController : Controller
 	{
 		using var csvStream = file.OpenReadStream();
 		var transactions = _transactionCsvReader.Read(csvStream);
-		await _transactionService.Save(transactions);
+		var dtos = transactions.Select(TransactionDTO.From);
+		await _transactionService.AddOrUpdateAsync(dtos);
 		return Created();
 	}
 
@@ -100,14 +101,14 @@ public class TransactionsController : Controller
 
 	private async Task<IEnumerable<Transaction>> GetAllTransactions()
 	{
-		return await _transactionService.GetAll();
+		return await _transactionService.GetAllAsync();
 	}
 
 	private async Task<IEnumerable<Transaction>> GetTransactionInLocalDateRange(DateTime? fromDate, DateTime? toDate)
 	{
 		var from = fromDate ?? DateTime.MinValue;
 		var to = toDate ?? DateTime.MinValue;
-		return await _transactionService.GetInTransactionLocalDateRange(from, to);
+		return await _transactionService.GetInTransactionLocalDateRangeAsync(from, to);
 	}
 
 	private async Task<IEnumerable<Transaction>> GetTransactionsInDateRange(
@@ -119,7 +120,7 @@ public class TransactionsController : Controller
 		TimeSpan timeZoneOffset = _timezoneService.GetTimeZoneOffset(timeZoneId) ?? TimeSpan.Zero;
 		var from = fromDate?.Add(timeZoneOffset) ?? DateTime.MinValue;
 		var to = toDate?.Add(timeZoneOffset) ?? DateTime.MaxValue;
-		return await _transactionService.GetInDateRange(from, to);
+		return await _transactionService.GetInDateRangeAsync(from, to);
 	}
 
 	private async Task<FileContentResult> TransactionsFile(IEnumerable<Transaction> transactions)

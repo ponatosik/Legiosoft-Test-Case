@@ -11,13 +11,15 @@ namespace Legiosoft_test_case.Services;
 public class TransactionService : ITransactionService
 {
 	private readonly IDbConnectionFactory _connectionFactory;
+	private readonly ITransactionFactory _transactionFactory;
 
-	public TransactionService(IDbConnectionFactory connectionFactory)
+	public TransactionService(IDbConnectionFactory connectionFactory, ITransactionFactory transactionFactory)
 	{
 		_connectionFactory = connectionFactory;
+		_transactionFactory = transactionFactory;
 	}
 
-	public async Task Add(IEnumerable<Transaction> transactions)
+	public async Task AddAsync(IEnumerable<TransactionDTO> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 
@@ -37,11 +39,11 @@ public class TransactionService : ITransactionService
 				@IanaTimeZoneId, @UtcTime, @LocalTime)
 			""";
 
-		var commandData = transactions.Select(transaction => FlattenedTransaction.From(transaction)).ToList();
+		var commandData = transactions.Select(FlattenedFromDto).ToList();
 		await connection.ExecuteAsync(sql, commandData);
 	}
 
-	public async Task<IEnumerable<Transaction>> GetAll()
+	public async Task<IEnumerable<Transaction>> GetAllAsync()
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
@@ -55,7 +57,7 @@ public class TransactionService : ITransactionService
 		return (await connection.QueryAsync<FlattenedTransaction>(sql)).Select(flattened => flattened.ToTransaction());
 	}
 
-	public Task<IEnumerable<Transaction>> GetInDateRange(DateTime from, DateTime to)
+	public Task<IEnumerable<Transaction>> GetInDateRangeAsync(DateTime from, DateTime to)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
@@ -70,7 +72,7 @@ public class TransactionService : ITransactionService
 		return connection.QueryAsync<Transaction>(sql, new { FromDate = from, ToDate = to });
 	}
 
-	public Task<IEnumerable<Transaction>> GetInTransactionLocalDateRange(DateTime from, DateTime to)
+	public Task<IEnumerable<Transaction>> GetInTransactionLocalDateRangeAsync(DateTime from, DateTime to)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
@@ -85,7 +87,7 @@ public class TransactionService : ITransactionService
 		return connection.QueryAsync<Transaction>(sql, new { FromDate = from, ToDate = to });
 	}
 
-	public Task Save(IEnumerable<Transaction> transactions)
+	public Task AddOrUpdateAsync(IEnumerable<TransactionDTO> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
@@ -98,11 +100,11 @@ public class TransactionService : ITransactionService
 				@IanaTimeZoneId, @UtcTime, @LocalTime)
 			""";
 
-		var commandData = transactions.Select(transaction => FlattenedTransaction.From(transaction)).ToList();
+		var commandData = transactions.Select(FlattenedFromDto).ToList();
 		return connection.ExecuteAsync(sql, commandData);
 	}
 
-	public async Task Update(IEnumerable<Transaction> transactions)
+	public async Task UpdateAsync(IEnumerable<TransactionDTO> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 
@@ -124,23 +126,23 @@ public class TransactionService : ITransactionService
 			WHERE Id = @Id
 			""";
 
-		var commandData = transactions.Select(transaction => FlattenedTransaction.From(transaction)).ToList();
+		var commandData = transactions.Select(FlattenedFromDto).ToList();
 		await connection.ExecuteAsync(sql, commandData);
 	}
 
-	public Task<string?> FindAnyExisting(IEnumerable<Transaction> transactions)
+	public Task<string?> FindAnyExistingAsync(IEnumerable<TransactionDTO> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		return FindAnyExisting(transactions, connection);
 	}
 
-	public Task<string?> FindAnyNotExisting(IEnumerable<Transaction> transactions)
+	public Task<string?> FindAnyNotExistingAsync(IEnumerable<TransactionDTO> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		return FindAnyNotExisting(transactions, connection);
 	}
 
-	private async Task<string?> FindAnyExisting(IEnumerable<Transaction> transactions, IDbConnection connection) 
+	private async Task<string?> FindAnyExisting(IEnumerable<TransactionDTO> transactions, IDbConnection connection) 
 	{
 		var transactionIds = transactions.Select(t => t.Id).ToList();
 
@@ -156,7 +158,7 @@ public class TransactionService : ITransactionService
 		return existingId;
 	}
 
-    private async Task<string?> FindAnyNotExisting(IEnumerable<Transaction> transactions, IDbConnection connection)
+    private async Task<string?> FindAnyNotExisting(IEnumerable<TransactionDTO> transactions, IDbConnection connection)
     {
         const string sql =
 			"""
@@ -176,4 +178,15 @@ public class TransactionService : ITransactionService
 
 		return null;
     }
+
+	private FlattenedTransaction FlattenedFromDto(TransactionDTO transaction)
+	{
+		return FlattenedTransaction.From(_transactionFactory.CreateFromLocalTime(
+			transaction.Id,
+			transaction.Name,
+			transaction.Email,
+			transaction.Amount,
+			transaction.ClientLocation,
+			transaction.LocalTime));		
+	}
 }

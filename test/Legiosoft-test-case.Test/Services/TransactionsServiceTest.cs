@@ -58,6 +58,8 @@ public class TransactionsServiceTest
 		var services = new ServiceCollection();
 		services.UseSqlite("file::memory:?cache=shared");
 		services.AddTransient<ITransactionService, TransactionService>();
+		services.AddTransient<ITimezoneService, TimezoneService>();
+		services.AddTransient<ITransactionFactory, TransactionFactory>();
 
 		var serviceProvider = services.BuildServiceProvider();
 
@@ -86,8 +88,9 @@ public class TransactionsServiceTest
 			new Transaction() { Id = "new_id2", Name = "n2", Email = "e2", Amount = 2, ClientLocation = GREENWICH_COORDINATES,
 				IanaTimeZoneId = GREENWICH_TIMEZONE_ID, UtcTime = DateTime.UtcNow.AddDays(2), LocalTime =DateTime.UtcNow.AddDays(2) }
 		];
+		var transactionDtos = transactions.Select(TransactionDTO.From);
 
-		await _transactionsService.Add(transactions);
+		await _transactionsService.AddAsync(transactionDtos);
 
 		List<Transaction> persistedTransactions = _dbContext.Transactions.ToList();
 		Assert.Contains(persistedTransactions, t => t.Id == transactions[0].Id);
@@ -103,19 +106,21 @@ public class TransactionsServiceTest
 				IanaTimeZoneId = GREENWICH_TIMEZONE_ID, UtcTime = DateTime.UtcNow, LocalTime = DateTime.UtcNow },
 			_persistedTransactions[0]
 		];
+		var transactionDtos = transactions.Select(TransactionDTO.From);
 
 		await Assert.ThrowsAsync<EntityAllreadyExistException<Transaction>>(async () =>
-			await _transactionsService.Add(transactions));
+			await _transactionsService.AddAsync(transactionDtos));
 	}
 
 	[Fact]
 	public async Task Update_ExistingTransactions_ShouldPersistChanges()
 	{
 		Transaction[] transactionsToUpdate = [_persistedTransactions[0], _persistedTransactions[1]];
+		var transactionDtos = transactionsToUpdate.Select(TransactionDTO.From);
 
 		transactionsToUpdate[0].Name = "NewName1";
 		transactionsToUpdate[1].Name = "NewName2";
-		await _transactionsService.Update(transactionsToUpdate);
+		await _transactionsService.UpdateAsync(transactionDtos);
 
 		List<Transaction> persistedTransactions = _dbContext.Transactions.ToList();
 		Assert.Contains(persistedTransactions, t => t.Id == transactionsToUpdate[0].Id && t.Name == transactionsToUpdate[0].Name);
@@ -138,14 +143,15 @@ public class TransactionsServiceTest
 				LocalTime = DateTime.UtcNow
 			};
 		Transaction[] transactionsToUpdate = [_persistedTransactions[0], newTransaction];
+		var transactionDtos = transactionsToUpdate.Select(TransactionDTO.From);
 
 		transactionsToUpdate[0].Name = "NewName1";
 		await Assert.ThrowsAsync<EntityNotFoundException<Transaction>>(async () =>
-			await _transactionsService.Update(transactionsToUpdate));
+			await _transactionsService.UpdateAsync(transactionDtos));
 	}
 
 	[Fact]
-	public async Task Save_NewAndExistingTransactions_ShouldPersistChangesAndNewTransactions()
+	public async Task AddOrUpdate_NewAndExistingTransactions_ShouldPersistChangesAndNewTransactions()
 	{
 		var newTransaction = new Transaction()
 		{
@@ -160,9 +166,10 @@ public class TransactionsServiceTest
 		};
 		var existingTransaction = _persistedTransactions[0];
 		Transaction[] transactions = [existingTransaction, newTransaction];
+		var transactionDtos = transactions.Select(TransactionDTO.From);
 
 		existingTransaction.Name = "NewName1";
-		await _transactionsService.Save(transactions);
+		await _transactionsService.AddOrUpdateAsync(transactionDtos);
 
 		List<Transaction> updatedTransactions = _dbContext.Transactions.ToList();
 		Assert.Contains(updatedTransactions, t => t.Id == transactions[0].Id && t.Name == transactions[0].Name);
@@ -173,7 +180,7 @@ public class TransactionsServiceTest
 	public async Task GetAll_PersistedTransactions_ShouldReturnAllPersistedTransactions()
 	{
 
-		var result = (await _transactionsService.GetAll()).ToList();
+		var result = (await _transactionsService.GetAllAsync()).ToList();
 
 		Assert.Equal(_persistedTransactions.Length, result.Count);
 		Assert.Contains(result, t => t.Id == _persistedTransactions[0].Id && t.Name == _persistedTransactions[0].Name);
@@ -187,7 +194,7 @@ public class TransactionsServiceTest
 		var toDate = _persistedTransactions[2].UtcTime;
 		Transaction[] expectedTransactions = [_persistedTransactions[1], _persistedTransactions[2]];
 
-		var result = (await _transactionsService.GetInDateRange(fromDate, toDate)).ToList();
+		var result = (await _transactionsService.GetInDateRangeAsync(fromDate, toDate)).ToList();
 
 		Assert.Equal(expectedTransactions.Length, result.Count);
 		Assert.Contains(result, t => t.Id == expectedTransactions[0].Id && t.Name == expectedTransactions[0].Name);

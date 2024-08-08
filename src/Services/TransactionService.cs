@@ -57,7 +57,7 @@ public class TransactionService : ITransactionService
 		return (await connection.QueryAsync<FlattenedTransaction>(sql)).Select(flattened => flattened.ToTransaction());
 	}
 
-	public Task<IEnumerable<Transaction>> GetInDateRangeAsync(DateTime from, DateTime to)
+	public async Task<IEnumerable<Transaction>> GetInDateRangeAsync(DateTime from, DateTime to)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
@@ -69,10 +69,12 @@ public class TransactionService : ITransactionService
 			WHERE t.UtcTime BETWEEN @FromDate AND @ToDate
 			""";
 
-		return connection.QueryAsync<Transaction>(sql, new { FromDate = from, ToDate = to });
+
+		var queryData = new { FromDate = from, ToDate = to };
+		return (await connection.QueryAsync<FlattenedTransaction>(sql, queryData)).Select(flattened => flattened.ToTransaction());
 	}
 
-	public Task<IEnumerable<Transaction>> GetInTransactionLocalDateRangeAsync(DateTime from, DateTime to)
+	public async Task<IEnumerable<Transaction>> GetInTransactionLocalDateRangeAsync(DateTime from, DateTime to)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 		const string sql =
@@ -84,7 +86,8 @@ public class TransactionService : ITransactionService
 			WHERE t.LocalTime BETWEEN @FromDate AND @ToDate
 			""";
 
-		return connection.QueryAsync<Transaction>(sql, new { FromDate = from, ToDate = to });
+		var queryData = new { FromDate = from, ToDate = to };
+		return (await connection.QueryAsync<FlattenedTransaction>(sql, queryData)).Select(flattened => flattened.ToTransaction());
 	}
 
 	public Task AddOrUpdateAsync(IEnumerable<TransactionDTO> transactions)

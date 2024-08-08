@@ -1,40 +1,23 @@
-using Legiosoft_test_case.Controllers;
-using Legiosoft_test_case.Data;
-using Legiosoft_test_case.ExceptionHandlers;
-using Legiosoft_test_case.Models;
-using Legiosoft_test_case.Services;
-using Legiosoft_test_case.Services.Interfaces;
-using System.Reflection;
+using Legiosoft_test_case.Configuration;
+using Legiosoft_test_case.Configuration.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(config =>
-{
-	var assembly = typeof(TransactionsController).Assembly;
-	var xmlFile = $"{assembly.GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    config.IncludeXmlComments(xmlPath);
-});
 
-builder.Services.UseSqlite("Transactions.db");
-builder.Services.AddSingleton<ITimezoneService, TimezoneService>();
-builder.Services.AddSingleton<ITransactionService, TransactionService>();
-builder.Services.AddSingleton<ICsvReader<Transaction>, TransactionCsvReaderService>();
-builder.Services.AddSingleton<IExcelWriter<Transaction>, TransactionExcelWriter>();
-builder.Services.AddSingleton<ITransactionFactory, TransactionFactory>();
+// Custom configuration, look at Configuration folder
+builder.Services.ConfigureApiDocumentation();
+builder.Services.ConfigureServices();
+builder.Services.ConfigureSqlite("Transactions.db");
+builder.Services.ConfigureExceptionHandling();
 
-builder.Services.AddProblemDetails();
-builder.Services.AddExceptionHandler<FormatExceptionHandler>();
-builder.Services.AddExceptionHandler<EntityAllreadyExistExceptionHandler>();
-builder.Services.AddExceptionHandler<EntityNotFoundExceptionHandler>();
+var configuration = builder.Configuration;
+builder.Services.Configure<TransactionCsvImportOptions>(configuration.GetSection("CsvTransactionImport"));
+builder.Services.Configure<TransactionExcelExportOptions>(configuration.GetSection("ExcelTransactionExport"));
 
 var app = builder.Build();
-
 
 app.UseExceptionHandler();
 

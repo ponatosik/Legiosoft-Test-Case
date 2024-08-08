@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Legiosoft_test_case.Configuration;
+using Legiosoft_test_case.Data;
+using Microsoft.EntityFrameworkCore;
 
-namespace Legiosoft_test_case.Data;
+namespace Legiosoft_test_case.Configuration;
 
 public static class DatabaseConfiguration
 {
-	public static IServiceCollection UseSqlite(this IServiceCollection services, string dataSource)
+	public static IServiceCollection ConfigureSqlite(this IServiceCollection services, string dataSource)
 	{
 		var connectionString = $"Data source={dataSource}";
 		var dbConnectionFactory = new SqliteConnectionFactory(connectionString);

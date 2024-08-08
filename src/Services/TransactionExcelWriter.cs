@@ -3,12 +3,20 @@ using Legiosoft_test_case.Services.Interfaces;
 using IronXL;
 using IronXL.Styles;
 using IronSoftware.Drawing;
-
+using Microsoft.Extensions.Options;
+using Legiosoft_test_case.Configuration.Options;
 
 namespace Legiosoft_test_case.Services;
 
 public class TransactionExcelWriter : IExcelWriter<Transaction>
 {
+	private readonly TransactionExcelExportOptions _options;
+
+	public TransactionExcelWriter(IOptions<TransactionExcelExportOptions> options)
+	{
+		_options = options.Value;
+	}
+
 	public Task WriteStream(IEnumerable<Transaction> data, ref Stream stream)
 	{
 		WorkBook workbook = WriteWorkbook(data);
@@ -25,7 +33,7 @@ public class TransactionExcelWriter : IExcelWriter<Transaction>
 	private WorkBook WriteWorkbook(IEnumerable<Transaction> data)
 	{
 		WorkBook workbook = WorkBook.Create(ExcelFileFormat.XLSX);
-		WorkSheet sheet = workbook.CreateWorkSheet("transactions");
+		WorkSheet sheet = workbook.CreateWorkSheet(_options.WorksheetName);
 
 		WriteHeader(sheet);
 
@@ -34,19 +42,22 @@ public class TransactionExcelWriter : IExcelWriter<Transaction>
 		{
 			WriteRow(sheet, item, rowId++);
 		}
-		AutoSizeColumns(sheet);
+		if (_options.AutoSizeColumns)
+		{
+			AutoSizeColumns(sheet);
+		}
 
 		return workbook;
 	}
 
 	private void WriteHeader(WorkSheet sheet)
 	{
-		sheet["A1"].Value = "Id";
-		sheet["B1"].Value = "Name";
-		sheet["C1"].Value = "Email";
-		sheet["D1"].Value = "Amount";
-		sheet["E1:F1"].Value = "Location";
-		sheet["G1"].Value = "UtcTime";
+		sheet["A1"].Value = _options.IdHeaderText;
+		sheet["B1"].Value = _options.NameHeaderText;
+		sheet["C1"].Value = _options.EmailHeaderText;
+		sheet["D1"].Value = _options.AmountHeaderText;
+		sheet["E1:F1"].Value = _options.ClientLocationHeaderText;
+		sheet["G1"].Value = _options.UtcTimeHeaderText;
 
 		sheet.Merge("E1:F1");
 

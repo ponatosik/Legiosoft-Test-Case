@@ -1,4 +1,5 @@
-﻿using Legiosoft_test_case.Data;
+﻿using Legiosoft_test_case.Configuration;
+using Legiosoft_test_case.Data;
 using Legiosoft_test_case.Data.Exceptions;
 using Legiosoft_test_case.Models;
 using Legiosoft_test_case.Services;
@@ -56,7 +57,7 @@ public class TransactionsServiceTest
 	public TransactionsServiceTest()
 	{
 		var services = new ServiceCollection();
-		services.UseSqlite("file::memory:?cache=shared");
+		services.ConfigureSqlite("file::memory:?cache=shared");
 		services.AddTransient<ITransactionService, TransactionService>();
 		services.AddTransient<ITimezoneService, TimezoneService>();
 		services.AddTransient<ITransactionFactory, TransactionFactory>();

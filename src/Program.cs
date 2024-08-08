@@ -21,7 +21,7 @@ builder.Services.AddSwaggerGen(config =>
     config.IncludeXmlComments(xmlPath);
 });
 
-builder.Services.UseSqlite("TestDb.db");
+builder.Services.UseSqlite("Transactions.db");
 builder.Services.AddSingleton<ITimezoneService, TimezoneService>();
 builder.Services.AddSingleton<ITransactionService, TransactionService>();
 builder.Services.AddSingleton<ICsvReader<Transaction>, TransactionCsvReaderService>();

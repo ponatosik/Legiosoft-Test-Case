@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8FA7C1D2-E8A8-4D0E-AAA0-28819ABC35E1}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Legiosoft-test-case.Test", "test\Legiosoft-test-case.Test\Legiosoft-test-case.Test.csproj", "{F0DDC3FE-BABB-4AB7-8C93-1D0D8F1FB04D}"

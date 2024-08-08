@@ -1,6 +1,7 @@
 ﻿using Legiosoft_test_case.Models;
 using Legiosoft_test_case.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace Legiosoft_test_case.Controllers;
 
@@ -97,6 +98,26 @@ public class TransactionsController : Controller
 			var transactions = await GetTransactionsInDateRange(fromDate, toDate, ianaTimeZoneId);
 			return await TransactionsFile(transactions);
 		}
+	}
+
+	[HttpGet("january2024")]
+	public Task<IActionResult> GetJanuary2024(
+		[FromQuery(Name = "ianaZone")] string? ianaTimeZoneId = null,
+		[FromQuery(Name = "transactionLocal")] bool useTransactionLocalTime = false)
+	{
+		var from = DateTime.Parse("01/01/2024 00:00:00", CultureInfo.InvariantCulture);
+		var to = DateTime.Parse("01/02/2024 00:00:00", CultureInfo.InvariantCulture);
+		return Get(from, to, ianaTimeZoneId, useTransactionLocalTime);
+	}
+
+	[HttpGet("january2024/download")]
+	public Task<IActionResult> DownloadJanuary2024(
+		[FromQuery(Name = "ianaZone")] string? ianaTimeZoneId = null,
+		[FromQuery(Name = "transactionLocal")] bool useTransactionLocalTime = false)
+	{
+		var from = DateTime.Parse("01/01/2024 00:00:00", CultureInfo.InvariantCulture);
+		var to = DateTime.Parse("01/02/2024 00:00:00", CultureInfo.InvariantCulture);
+		return Download(from, to, ianaTimeZoneId, useTransactionLocalTime);
 	}
 
 	private async Task<IEnumerable<Transaction>> GetAllTransactions()

@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Legiosoft_test_case.Data;
+using Legiosoft_test_case.Data.Exceptions;
 using Legiosoft_test_case.Models;
 using Legiosoft_test_case.Models.Flattened;
 using Legiosoft_test_case.Services.Interfaces;
@@ -16,9 +17,16 @@ public class TransactionService : ITransactionService
 		_connectionFactory = connectionFactory;
 	}
 
-	public Task Add(IEnumerable<Transaction> transactions)
+	public async Task Add(IEnumerable<Transaction> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
+
+		string? allreadyExisting = await FindAnyExisting(transactions, connection);
+		if (allreadyExisting is not null)
+		{
+			throw new EntityAllreadyExistException<Transaction>(allreadyExisting!);
+		}
+
 		const string sql =
 			"""
 			INSERT INTO Transactions 
@@ -30,7 +38,7 @@ public class TransactionService : ITransactionService
 			""";
 
 		var commandData = transactions.Select(transaction => FlattenedTransaction.From(transaction)).ToList();
-		return connection.ExecuteAsync(sql, commandData);
+		await connection.ExecuteAsync(sql, commandData);
 	}
 
 	public async Task<IEnumerable<Transaction>> GetAll()
@@ -94,9 +102,16 @@ public class TransactionService : ITransactionService
 		return connection.ExecuteAsync(sql, commandData);
 	}
 
-	public Task Update(IEnumerable<Transaction> transactions)
+	public async Task Update(IEnumerable<Transaction> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
+
+		string? notFound = await FindAnyNotExisting(transactions, connection);
+		if (notFound is not null)
+		{
+			throw new EntityNotFoundException<Transaction>(notFound!);
+		}
+
 		const string sql =
 			"""
 			UPDATE Transactions
@@ -110,6 +125,55 @@ public class TransactionService : ITransactionService
 			""";
 
 		var commandData = transactions.Select(transaction => FlattenedTransaction.From(transaction)).ToList();
-		return connection.ExecuteAsync(sql, commandData);
+		await connection.ExecuteAsync(sql, commandData);
 	}
+
+	public Task<string?> FindAnyExisting(IEnumerable<Transaction> transactions)
+	{
+		using IDbConnection connection = _connectionFactory.CreateConnection();
+		return FindAnyExisting(transactions, connection);
+	}
+
+	public Task<string?> FindAnyNotExisting(IEnumerable<Transaction> transactions)
+	{
+		using IDbConnection connection = _connectionFactory.CreateConnection();
+		return FindAnyNotExisting(transactions, connection);
+	}
+
+	private async Task<string?> FindAnyExisting(IEnumerable<Transaction> transactions, IDbConnection connection) 
+	{
+		var transactionIds = transactions.Select(t => t.Id).ToList();
+
+		const string sql = 
+			"""
+			SELECT Id 
+			FROM Transactions 
+			WHERE Id IN @TransactionIds 
+			LIMIT 1
+			""";
+
+		string? existingId = await connection.QuerySingleOrDefaultAsync<string>(sql, new { TransactionIds = transactionIds });
+		return existingId;
+	}
+
+    private async Task<string?> FindAnyNotExisting(IEnumerable<Transaction> transactions, IDbConnection connection)
+    {
+        const string sql =
+			"""
+			SELECT COUNT(1) 
+			FROM
+			Transactions WHERE Id = @Id;
+			""";
+
+		foreach (var transaction in transactions)
+		{
+			int count = await connection.ExecuteScalarAsync<int>(sql, new { transaction.Id });
+			if (count == 0)
+			{
+				return transaction.Id;
+			}
+		}
+
+		return null;
+    }
 }

@@ -19,9 +19,11 @@ builder.Services.AddSingleton<ITransactionService, TransactionService>();
 builder.Services.AddSingleton<ICsvReader<Transaction>, TransactionCsvReaderService>();
 builder.Services.AddSingleton<IExcelWriter<Transaction>, TransactionExcelWriter>();
 builder.Services.AddSingleton<ITransactionFactory, TransactionFactory>();
-builder.Services.AddProblemDetails();
 
+builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<FormatExceptionHandler>();
+builder.Services.AddExceptionHandler<EntityAllreadyExistExceptionHandler>();
+builder.Services.AddExceptionHandler<EntityNotFoundExceptionHandler>();
 
 var app = builder.Build();
 

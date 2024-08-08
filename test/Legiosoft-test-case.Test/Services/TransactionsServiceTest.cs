@@ -1,4 +1,5 @@
 ﻿using Legiosoft_test_case.Data;
+using Legiosoft_test_case.Data.Exceptions;
 using Legiosoft_test_case.Models;
 using Legiosoft_test_case.Services;
 using Legiosoft_test_case.Services.Interfaces;
@@ -94,6 +95,20 @@ public class TransactionsServiceTest
 	}
 
 	[Fact]
+	public async Task Add_ExistingTransactions_ShoulThrowEntityAllreadyExists()
+	{
+		Transaction[] transactions =
+		[
+			new Transaction() { Id = "new_id1", Name = "n1", Email = "e1", Amount = 1, ClientLocation = GREENWICH_COORDINATES,
+				IanaTimeZoneId = GREENWICH_TIMEZONE_ID, UtcTime = DateTime.UtcNow, LocalTime = DateTime.UtcNow },
+			_persistedTransactions[0]
+		];
+
+		await Assert.ThrowsAsync<EntityAllreadyExistException<Transaction>>(async () =>
+			await _transactionsService.Add(transactions));
+	}
+
+	[Fact]
 	public async Task Update_ExistingTransactions_ShouldPersistChanges()
 	{
 		Transaction[] transactionsToUpdate = [_persistedTransactions[0], _persistedTransactions[1]];
@@ -105,6 +120,28 @@ public class TransactionsServiceTest
 		List<Transaction> persistedTransactions = _dbContext.Transactions.ToList();
 		Assert.Contains(persistedTransactions, t => t.Id == transactionsToUpdate[0].Id && t.Name == transactionsToUpdate[0].Name);
 		Assert.Contains(persistedTransactions, t => t.Id == transactionsToUpdate[1].Id && t.Name == transactionsToUpdate[1].Name);
+	}
+
+	[Fact]
+	public async Task Update_NotExistingTransactions_ShouldThrowEntityNotFound()
+	{
+		Transaction newTransaction =
+			new Transaction()
+			{
+				Id = "new_id1",
+				Name = "n1",
+				Email = "e1",
+				Amount = 1,
+				ClientLocation = GREENWICH_COORDINATES,
+				IanaTimeZoneId = GREENWICH_TIMEZONE_ID,
+				UtcTime = DateTime.UtcNow,
+				LocalTime = DateTime.UtcNow
+			};
+		Transaction[] transactionsToUpdate = [_persistedTransactions[0], newTransaction];
+
+		transactionsToUpdate[0].Name = "NewName1";
+		await Assert.ThrowsAsync<EntityNotFoundException<Transaction>>(async () =>
+			await _transactionsService.Update(transactionsToUpdate));
 	}
 
 	[Fact]

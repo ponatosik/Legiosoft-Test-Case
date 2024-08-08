@@ -1,6 +1,9 @@
 ﻿using Legiosoft_test_case.Models;
 using Legiosoft_test_case.Services.Interfaces;
-using Spire.Xls;
+using IronXL;
+using IronXL.Styles;
+using IronSoftware.Drawing;
+
 
 namespace Legiosoft_test_case.Services;
 
@@ -8,62 +11,82 @@ public class TransactionExcelWriter : IExcelWriter<Transaction>
 {
 	public Task WriteStream(IEnumerable<Transaction> data, ref Stream stream)
 	{
-		Workbook workbook = WriteWorkbook(data);
-		workbook.SaveToStream(stream, FileFormat.Xlsb2010);
+		WorkBook workbook = WriteWorkbook(data);
+		stream = workbook.ToStream();
 		return Task.CompletedTask;
 	}
 
 	public Task<byte[]> WriteBytes(IEnumerable<Transaction> data)
 	{
-		Workbook workbook = WriteWorkbook(data);
-		using MemoryStream stream = new MemoryStream();
-		workbook.SaveToStream(stream);
-		byte[] outData = stream.ToArray();
-		return Task.FromResult(outData);
+		WorkBook workbook = WriteWorkbook(data);
+		return Task.FromResult(workbook.ToByteArray());
 	}
 
-	private Workbook WriteWorkbook(IEnumerable<Transaction> data)
+	private WorkBook WriteWorkbook(IEnumerable<Transaction> data)
 	{
-		Workbook workbook = new Workbook();
-		Worksheet worksheet = workbook.Worksheets[0];
+		WorkBook workbook = WorkBook.Create(ExcelFileFormat.XLSX);
+		WorkSheet sheet = workbook.CreateWorkSheet("transactions");
 
-		WriteHeader(worksheet);
+		WriteHeader(sheet);
 
 		int rowId = 2;
 		foreach (var item in data)
 		{
-			WriteRow(worksheet, item, rowId++);
+			WriteRow(sheet, item, rowId++);
 		}
+		AutoSizeColumns(sheet);
 
 		return workbook;
 	}
 
-	private void WriteHeader(Worksheet sheet)
+	private void WriteHeader(WorkSheet sheet)
 	{
-		sheet.Range["A1"].Text = "Id";
-		sheet.Range["B1"].Text = "Name";
-		sheet.Range["C1"].Text = "Email";
-		sheet.Range["D1"].Text = "Amount";
-		sheet.Range["E1:F1"].Text = "Location";
-		sheet.Range["G1"].Text = "UtcTime";
+		sheet["A1"].Value = "Id";
+		sheet["B1"].Value = "Name";
+		sheet["C1"].Value = "Email";
+		sheet["D1"].Value = "Amount";
+		sheet["E1:F1"].Value = "Location";
+		sheet["G1"].Value = "UtcTime";
 
-		sheet.Range["E1:F1"].Merge();
-		sheet.Range["A1:G1"].BorderInside();
-		sheet.Range["A1:G1"].BorderAround();
-		sheet.Range["A1:G1"].Style.HorizontalAlignment = HorizontalAlignType.Center;
+		sheet.Merge("E1:F1");
+
+		var headerRange = sheet["A1:G1"];
+
+		SetAllBordes(headerRange, BorderType.Medium);
+		headerRange.Style.SetBackgroundColor(Color.LightGray);
+		sheet["A1:G1"].Style.HorizontalAlignment = HorizontalAlignment.Center;
 	}
 
-	private void WriteRow(Worksheet sheet, Transaction transaction, int rowId) 
+	private void WriteRow(WorkSheet sheet, Transaction transaction, int rowId)
 	{
-		sheet.Range[$"A{rowId}"].Text = transaction.Id;
-		sheet.Range[$"B{rowId}"].Text = transaction.Name;
-		sheet.Range[$"C{rowId}"].Text = transaction.Email;
-		sheet.Range[$"D{rowId}"].NumberValue = (double)transaction.Amount;
-		sheet.Range[$"E{rowId}"].NumberValue = (double)transaction.ClientLocation.Latitude;
-		sheet.Range[$"F{rowId}"].NumberValue = (double)transaction.ClientLocation.Longitude;
-		sheet.Range[$"G{rowId}"].DateTimeValue = transaction.UtcTime;
+		sheet[$"A{rowId}"].Value = transaction.Id;
+		sheet[$"B{rowId}"].Value = transaction.Name;
+		sheet[$"C{rowId}"].Value = transaction.Email;
+		sheet[$"D{rowId}"].DecimalValue = transaction.Amount;
+		sheet[$"E{rowId}"].DecimalValue = transaction.ClientLocation.Latitude;
+		sheet[$"F{rowId}"].DecimalValue = transaction.ClientLocation.Longitude;
+		sheet[$"G{rowId}"].DateTimeValue = transaction.UtcTime;
 
-		sheet.Range[$"A{rowId}:G{rowId}"].BorderInside();
-		sheet.Range[$"A{rowId}:G{rowId}"].BorderAround();
+		var range = sheet[$"A{rowId}:G{rowId}"];
+		SetAllBordes(range, BorderType.Thin);
+	}
+
+	private void SetAllBordes(IronXL.Range range, BorderType borderType)
+	{
+		range.Style.LeftBorder.Type = borderType;
+		range.Style.TopBorder.Type = borderType;
+		range.Style.RightBorder.Type = borderType;
+		range.Style.BottomBorder.Type = borderType;
+	}
+
+	private void AutoSizeColumns(WorkSheet sheet)
+	{
+		sheet.AutoSizeColumn(0);
+		sheet.AutoSizeColumn(1);
+		sheet.AutoSizeColumn(2);
+		sheet.AutoSizeColumn(3);
+		sheet.AutoSizeColumn(4);
+		sheet.AutoSizeColumn(5);
+		sheet.AutoSizeColumn(6);
 	}
 }

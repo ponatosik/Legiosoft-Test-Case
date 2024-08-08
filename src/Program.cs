@@ -1,8 +1,10 @@
+using Legiosoft_test_case.Controllers;
 using Legiosoft_test_case.Data;
 using Legiosoft_test_case.ExceptionHandlers;
 using Legiosoft_test_case.Models;
 using Legiosoft_test_case.Services;
 using Legiosoft_test_case.Services.Interfaces;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(config =>
+{
+	var assembly = typeof(TransactionsController).Assembly;
+	var xmlFile = $"{assembly.GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    config.IncludeXmlComments(xmlPath);
+});
 
 builder.Services.UseSqlite("TestDb.db");
 builder.Services.AddSingleton<ITimezoneService, TimezoneService>();

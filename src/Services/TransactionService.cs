@@ -22,8 +22,10 @@ public class TransactionService : ITransactionService
 	public async Task AddAsync(IEnumerable<TransactionDTO> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
-
-		string? alreadyExisting = await FindAnyExisting(transactions, connection);
+		connection.Open();
+		using IDbTransaction dbTransaction = connection.BeginTransaction();
+		
+		string? alreadyExisting = await FindAnyExisting(transactions, connection, dbTransaction);
 		if (alreadyExisting is not null)
 		{
 			throw new EntityAlreadyExistException<Transaction>(alreadyExisting);
@@ -38,14 +40,16 @@ public class TransactionService : ITransactionService
 				(@Id, @Name, @Email, @Amount, @ClientLocation_Latitude, @ClientLocation_Longitude,
 				@IanaTimeZoneId, @UtcTime, @LocalTime)
 			""";
-
+		
 		var commandData = transactions.Select(FlattenedFromDto).ToList();
-		await connection.ExecuteAsync(sql, commandData);
+		await connection.ExecuteAsync(sql, commandData, dbTransaction);
+		dbTransaction.Commit();
 	}
 
 	public async Task<IEnumerable<Transaction>> GetAllAsync()
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
+		
 		const string sql =
 			"""
 			SELECT 
@@ -53,13 +57,15 @@ public class TransactionService : ITransactionService
 				t.IanaTimeZoneId, t.UtcTime, t.LocalTime
 			FROM Transactions t
 			""";
-
-		return (await connection.QueryAsync<FlattenedTransaction>(sql)).Select(flattened => flattened.ToTransaction());
+		
+		return (await connection.QueryAsync<FlattenedTransaction>(sql))
+			.Select(flattened => flattened.ToTransaction());
 	}
 
 	public async Task<IEnumerable<Transaction>> GetInDateRangeAsync(DateTime from, DateTime to)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
+		
 		const string sql =
 			"""
 			SELECT 
@@ -71,12 +77,15 @@ public class TransactionService : ITransactionService
 
 
 		var queryData = new { FromDate = from, ToDate = to };
-		return (await connection.QueryAsync<FlattenedTransaction>(sql, queryData)).Select(flattened => flattened.ToTransaction());
+		
+		return (await connection.QueryAsync<FlattenedTransaction>(sql, queryData))
+			.Select(flattened => flattened.ToTransaction());
 	}
 
 	public async Task<IEnumerable<Transaction>> GetInTransactionLocalDateRangeAsync(DateTime from, DateTime to)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
+		
 		const string sql =
 			"""
 			SELECT 
@@ -87,12 +96,15 @@ public class TransactionService : ITransactionService
 			""";
 
 		var queryData = new { FromDate = from, ToDate = to };
+		
+		
 		return (await connection.QueryAsync<FlattenedTransaction>(sql, queryData)).Select(flattened => flattened.ToTransaction());
 	}
 
-	public Task AddOrUpdateAsync(IEnumerable<TransactionDTO> transactions)
+	public async Task AddOrUpdateAsync(IEnumerable<TransactionDTO> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
+		
 		const string sql =
 			"""
 			REPLACE INTO Transactions 
@@ -104,14 +116,21 @@ public class TransactionService : ITransactionService
 			""";
 
 		var commandData = transactions.Select(FlattenedFromDto).ToList();
-		return connection.ExecuteAsync(sql, commandData);
+		
+		connection.Open();
+		using IDbTransaction dbTransaction = connection.BeginTransaction();
+		
+		await connection.ExecuteAsync(sql, commandData, transaction: dbTransaction);
+		dbTransaction.Commit();
 	}
 
 	public async Task UpdateAsync(IEnumerable<TransactionDTO> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
-
-		string? notFound = await FindAnyNotExisting(transactions, connection);
+		connection.Open();
+		using IDbTransaction dbTransaction = connection.BeginTransaction();
+		
+		string? notFound = await FindAnyNotExisting(transactions, connection, dbTransaction);
 		if (notFound is not null)
 		{
 			throw new EntityNotFoundException<Transaction>(notFound!);
@@ -130,22 +149,28 @@ public class TransactionService : ITransactionService
 			""";
 
 		var commandData = transactions.Select(FlattenedFromDto).ToList();
-		await connection.ExecuteAsync(sql, commandData);
+		await connection.ExecuteAsync(sql, commandData, dbTransaction);
+		dbTransaction.Commit();
 	}
 
 	public Task<string?> FindAnyExistingAsync(IEnumerable<TransactionDTO> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
-		return FindAnyExisting(transactions, connection);
+		using IDbTransaction dbTransaction = connection.BeginTransaction();
+		return FindAnyExisting(transactions, connection, dbTransaction);
 	}
 
 	public Task<string?> FindAnyNotExistingAsync(IEnumerable<TransactionDTO> transactions)
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
-		return FindAnyNotExisting(transactions, connection);
+		using IDbTransaction dbTransaction = connection.BeginTransaction();
+		return FindAnyNotExisting(transactions, connection, dbTransaction);
 	}
 
-	private async Task<string?> FindAnyExisting(IEnumerable<TransactionDTO> transactions, IDbConnection connection) 
+	private async Task<string?> FindAnyExisting(
+		IEnumerable<TransactionDTO> transactions,
+		IDbConnection connection,
+		IDbTransaction dbTransaction) 
 	{
 		var transactionIds = transactions.Select(t => t.Id).ToList();
 
@@ -157,11 +182,17 @@ public class TransactionService : ITransactionService
 			LIMIT 1
 			""";
 
-		string? existingId = await connection.QuerySingleOrDefaultAsync<string>(sql, new { TransactionIds = transactionIds });
+		string? existingId = await connection.QuerySingleOrDefaultAsync<string>(
+			sql,
+			new { TransactionIds = transactionIds },
+			dbTransaction);
 		return existingId;
 	}
 
-    private async Task<string?> FindAnyNotExisting(IEnumerable<TransactionDTO> transactions, IDbConnection connection)
+  private async Task<string?> FindAnyNotExisting(
+	    IEnumerable<TransactionDTO> transactions,
+	    IDbConnection connection,
+	    IDbTransaction dbTransaction)
     {
         const string sql =
 			"""
@@ -169,16 +200,16 @@ public class TransactionService : ITransactionService
 			FROM
 			Transactions WHERE Id = @Id;
 			""";
-
+  
 		foreach (var transaction in transactions)
 		{
-			int count = await connection.ExecuteScalarAsync<int>(sql, new { transaction.Id });
+			int count = await connection.ExecuteScalarAsync<int>(sql, new { transaction.Id }, dbTransaction);
 			if (count == 0)
 			{
 				return transaction.Id;
 			}
 		}
-
+  
 		return null;
     }
 

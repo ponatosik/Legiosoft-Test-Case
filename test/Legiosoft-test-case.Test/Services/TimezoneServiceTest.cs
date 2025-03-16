@@ -33,7 +33,7 @@ public class TimezoneServiceTest
 	[InlineData(34.05, -118.24, "-8:00")]
 	[InlineData(51.50, -0.11, "0:00")]
 	[InlineData(34.65, 139.83, "9:00")]
-	public void GetTimeZoneOffser_ValidCoordinates_ShouldReturnTimeZoneOffset(
+	public void GetTimeZoneOffset_ValidCoordinates_ShouldReturnTimeZoneOffset(
 		 decimal latitude, decimal longitude, string expectedUtcOffset)
 	{
 		var localTime = DateTime.Parse("01/01/2018 12:00", CultureInfo.InvariantCulture);
@@ -97,7 +97,7 @@ public class TimezoneServiceTest
 	// Europe/London
 	[InlineData(51.50, -0.11, "01/01/2018 19:22", "01/01/2018 19:22")]
 	[InlineData(51.50, -0.11, "06/01/2018 19:22", "06/01/2018 18:22")]
-	public void GetUtcTime_TimeZoneWithDaylightSaving_ShouldReturnDiffrentUtc0Time(
+	public void GetUtcTime_TimeZoneWithDaylightSaving_ShouldReturnDifferentUtc0Time(
 		 decimal latitude, decimal longitude, string localTimeStr, string expectedTimeStr)
 	{
 		var localTime = DateTime.Parse(localTimeStr, CultureInfo.InvariantCulture);

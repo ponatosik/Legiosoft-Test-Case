@@ -109,7 +109,7 @@ public class TransactionsServiceTest
 		];
 		var transactionDtos = transactions.Select(TransactionDTO.From);
 
-		await Assert.ThrowsAsync<EntityAllreadyExistException<Transaction>>(async () =>
+		await Assert.ThrowsAsync<EntityAlreadyExistException<Transaction>>(async () =>
 			await _transactionsService.AddAsync(transactionDtos));
 	}
 

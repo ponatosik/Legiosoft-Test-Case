@@ -23,10 +23,10 @@ public class TransactionService : ITransactionService
 	{
 		using IDbConnection connection = _connectionFactory.CreateConnection();
 
-		string? allreadyExisting = await FindAnyExisting(transactions, connection);
-		if (allreadyExisting is not null)
+		string? alreadyExisting = await FindAnyExisting(transactions, connection);
+		if (alreadyExisting is not null)
 		{
-			throw new EntityAllreadyExistException<Transaction>(allreadyExisting!);
+			throw new EntityAlreadyExistException<Transaction>(alreadyExisting);
 		}
 
 		const string sql =

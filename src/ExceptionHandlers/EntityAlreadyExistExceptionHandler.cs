@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Legiosoft_test_case.ExceptionHandlers;
 
-public class EntityAllreadyExistExceptionHandler : IExceptionHandler
+public class EntityAlreadyExistExceptionHandler : IExceptionHandler
 {
 	public async ValueTask<bool> TryHandleAsync(
 		HttpContext httpContext,
 		Exception exception,
 		CancellationToken cancellationToken)
 	{
-		if (exception is not EntityAllreadyExistException<Transaction>)
+		if (exception is not EntityAlreadyExistException<Transaction>)
 		{
 			return false;
 		}
@@ -20,7 +20,7 @@ public class EntityAllreadyExistExceptionHandler : IExceptionHandler
 		var problemDetails = new ProblemDetails
 		{
 			Status = StatusCodes.Status409Conflict,
-			Title = "Transaction allreay exists.",
+			Title = "Transaction already exists.",
 			Detail = exception.Message
 		};
 

@@ -8,7 +8,7 @@ public static class ExceptionHandlingConfiguration
 	{
 		services.AddProblemDetails();
 		services.AddExceptionHandler<FormatExceptionHandler>();
-		services.AddExceptionHandler<EntityAllreadyExistExceptionHandler>();
+		services.AddExceptionHandler<EntityAlreadyExistExceptionHandler>();
 		services.AddExceptionHandler<EntityNotFoundExceptionHandler>();
 
 		return services;

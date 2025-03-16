@@ -4,8 +4,8 @@ namespace Legiosoft_test_case.Models;
 
 public class Coordinates
 {
-	public decimal Latitude { get; set; }
-	public decimal Longitude { get; set; }
+	public decimal Latitude { get; init; }
+	public decimal Longitude { get; init; }
 
 	public Coordinates() { }
 	public Coordinates(decimal latitude, decimal longitude)
@@ -31,11 +31,11 @@ public class Coordinates
 			throw new FormatException("Invalid coordinates format. Input string must be in the format 'latitude, longitude'.");
 		}
 
-		if(latitude < -180 || latitude > 180)
+		if(latitude is < -180 or > 180)
 		{
 			throw new FormatException("Invalid coordinates format. latitude must be in range from -180 to 180.");
 		}
-		if (longitude < -180 || longitude > 180)
+		if (longitude is < -180 or > 180)
 		{
 			throw new FormatException("Invalid coordinates format. longitude must be in range from -180 to 180.");
 		}

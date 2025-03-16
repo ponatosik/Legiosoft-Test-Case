@@ -2,13 +2,13 @@
 
 public class TransactionCsvImportOptions
 {
-	public string IdFieldName { get; set; } = "transaction_id";
-	public string NameFieldName { get; set; } = "name";
-	public string EmailFieldName { get; set; } = "email";
-	public string AmountFieldName { get; set; } = "amount";
-	public string ClientLocationFieldName { get; set; } = "client_location";
-	public string LocalTimeFieldName { get; set; }  = "transaction_date";
+	public string IdFieldName { get; init; } = "transaction_id";
+	public string NameFieldName { get; init; } = "name";
+	public string EmailFieldName { get; init; } = "email";
+	public string AmountFieldName { get; init; } = "amount";
+	public string ClientLocationFieldName { get; init; } = "client_location";
+	public string LocalTimeFieldName { get; init; }  = "transaction_date";
 
-	public bool AmountFieldIncludesCurrency { get; set; } = true;
-	public List<string> AmmountFieldPossibleCurrencySigns { get; set; } = new() { "$" };
+	public bool AmountFieldIncludesCurrency { get; init; } = true;
+	public List<string> AmountFieldPossibleCurrencySigns { get; init; } = ["$"];
 }

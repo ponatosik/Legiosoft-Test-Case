@@ -96,7 +96,7 @@ public class TransactionCsvReaderService : ICsvReader<Transaction>
 		{
 			return decimal.Parse(amountStr, CultureInfo.InvariantCulture);
 		}
-		foreach (var currency in _options.AmmountFieldPossibleCurrencySigns)
+		foreach (var currency in _options.AmountFieldPossibleCurrencySigns)
 		{
 			amountStr = amountStr.Replace(currency, string.Empty);
 		}

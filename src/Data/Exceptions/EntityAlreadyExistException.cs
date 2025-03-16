@@ -1,16 +1,16 @@
 ﻿namespace Legiosoft_test_case.Data.Exceptions;
 
-public class EntityAllreadyExistException<T> : Exception
+public class EntityAlreadyExistException<T> : Exception
 {
 	public string EntityKey { get; }
 
-	public EntityAllreadyExistException(string entityKey)
+	public EntityAlreadyExistException(string entityKey)
 		: base(GetMessage(entityKey))
 	{
 		EntityKey = entityKey;
 	}
 
-	public EntityAllreadyExistException(string entityKey, Exception innerException)
+	public EntityAlreadyExistException(string entityKey, Exception innerException)
 		: base(GetMessage(entityKey), innerException)
 	{
 		EntityKey = entityKey;

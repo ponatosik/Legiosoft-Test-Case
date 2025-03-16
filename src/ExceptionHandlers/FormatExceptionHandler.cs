@@ -31,9 +31,9 @@ public class FormatExceptionHandler : IExceptionHandler
 
 	private string GetErrorMessage(FormatException exception) 
 	{
-		if(exception.InnerException is FormatException)
+		if(exception.InnerException is FormatException innerException)
 		{
-			var innerMessage = GetErrorMessage((FormatException)exception.InnerException);
+			var innerMessage = GetErrorMessage(innerException);
 			return $"{exception.Message} {innerMessage}";
 		}
 		return exception.Message;

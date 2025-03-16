@@ -12,19 +12,19 @@ public class TransactionsController : Controller
 	private readonly ITimezoneService _timezoneService;
 	private readonly ITransactionService _transactionService;
 	private readonly ICsvReader<Transaction> _transactionCsvReader;
-	private readonly IExcelWriter<Transaction> _transactionExcleWriter;
+	private readonly IExcelWriter<Transaction> _transactionExcelWriter;
 
-	const string EXCEL_MIME_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+	private const string ExcelMimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 	public TransactionsController(
 		ITransactionService transactionService,
 		ICsvReader<Transaction> transactionCsvReader,
-		IExcelWriter<Transaction> transactionExcleWriter,
+		IExcelWriter<Transaction> transactionExcelWriter,
 		ITimezoneService timezoneService)
 	{
 		_transactionService = transactionService;
 		_transactionCsvReader = transactionCsvReader;
-		_transactionExcleWriter = transactionExcleWriter;
+		_transactionExcelWriter = transactionExcelWriter;
 		_timezoneService = timezoneService;
 	}
 
@@ -140,7 +140,7 @@ public class TransactionsController : Controller
 	[HttpPost("upload")]
 	public async Task<IActionResult> Upload(IFormFile file)
 	{
-		using var csvStream = file.OpenReadStream();
+		await using var csvStream = file.OpenReadStream();
 		var transactions = _transactionCsvReader.Read(csvStream);
 		var dtos = transactions.Select(TransactionDTO.From);
 		await _transactionService.AddOrUpdateAsync(dtos);
@@ -148,7 +148,7 @@ public class TransactionsController : Controller
 	}
 
 	/// <summary>
-	/// Downloads excel file containing a list of transactions based on the specified parameters.
+	/// Downloads Excel file containing a list of transactions based on the specified parameters.
 	/// </summary>
 	///
 	/// <remarks>
@@ -221,7 +221,7 @@ public class TransactionsController : Controller
 	}
 
 	/// <summary>
-	/// Downloads excel file containing a list of transactions for January 2024.
+	/// Downloads Excel file containing a list of transactions for January 2024.
 	/// </summary>
 	///
 	/// <remarks>
@@ -275,8 +275,8 @@ public class TransactionsController : Controller
 
 	private async Task<FileContentResult> TransactionsFile(IEnumerable<Transaction> transactions)
 	{
-		var fileBytes = await _transactionExcleWriter.WriteBytes(transactions);
-		var file = new FileContentResult(fileBytes, EXCEL_MIME_TYPE);
+		var fileBytes = await _transactionExcelWriter.WriteBytes(transactions);
+		var file = new FileContentResult(fileBytes, ExcelMimeType);
 		var timeStamp = DateTime.UtcNow.ToFileTime();
 		file.FileDownloadName = $"transactions_{timeStamp}.xlsx";
 		return file;

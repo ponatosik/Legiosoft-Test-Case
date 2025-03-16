@@ -1,5 +1,4 @@
-﻿using Legiosoft_test_case.Configuration;
-using Legiosoft_test_case.Data;
+﻿using Legiosoft_test_case.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Legiosoft_test_case.Configuration;

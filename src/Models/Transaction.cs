@@ -2,12 +2,12 @@
 
 public class Transaction
 {
-	public string Id { get; set; }
-	public string Name { get; set; }
-	public string Email { get; set; }
-	public decimal Amount { get; set; }
-	public Coordinates ClientLocation { get; set; }
-	public string IanaTimeZoneId { get; set; }
-	public DateTime UtcTime { get; set; }
-	public DateTime LocalTime { get; set; }
+	public required string Id { get; init; }
+	public required string Name { get; set; }
+	public required string Email { get; set; }
+	public required decimal Amount { get; set; }
+	public required Coordinates ClientLocation { get; set; }
+	public required string IanaTimeZoneId { get; set; }
+	public required DateTime UtcTime { get; set; }
+	public required DateTime LocalTime { get; set; }
 }
